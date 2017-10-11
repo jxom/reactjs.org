@@ -1,9 +1,6 @@
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
- * This source code is licensed under the CC-BY-4.0 license found
- * in the LICENSE file in the root directory of this source tree.
- *
  * @emails react-core
  */
 
@@ -11,47 +8,50 @@
 
 import React from 'react';
 import {colors, media} from 'theme';
+import isItemActive from 'utils/isItemActive';
 import MetaTitle from '../MetaTitle';
 import ChevronSvg from '../ChevronSvg';
 
-// TODO Update isActive link as document scrolls past anchor tags
-// Maybe used 'hashchange' along with 'scroll' to set/update active links
-
 const Section = ({
+  activeItemId,
   createLink,
   isActive,
+  isScrollSync,
   location,
   onLinkClick,
   onSectionTitleClick,
   section,
 }) => (
   <div>
-    <MetaTitle
-      onClick={onSectionTitleClick}
-      cssProps={{
-        marginTop: 10,
-
-        [media.greaterThan('small')]: {
-          color: isActive ? colors.text : colors.subtle,
-
-          ':hover': {
-            color: colors.text,
-          },
-        },
-      }}>
-      {section.title}
-      <ChevronSvg
+    <button
+      css={{cursor: 'pointer', backgroundColor: 'transparent', border: 0}}
+      onClick={onSectionTitleClick}>
+      <MetaTitle
         cssProps={{
-          marginLeft: 7,
-          transform: isActive ? 'rotateX(180deg)' : 'rotateX(0deg)',
-          transition: 'transform 0.2s ease',
+          marginTop: 10,
 
-          [media.lessThan('small')]: {
-            display: 'none',
+          [media.greaterThan('small')]: {
+            color: isActive ? colors.text : colors.subtle,
+
+            ':hover': {
+              color: colors.text,
+            },
           },
-        }}
-      />
-    </MetaTitle>
+        }}>
+        {section.title}
+        <ChevronSvg
+          cssProps={{
+            marginLeft: 7,
+            transform: isActive ? 'rotateX(180deg)' : 'rotateX(0deg)',
+            transition: 'transform 0.2s ease',
+
+            [media.lessThan('small')]: {
+              display: 'none',
+            },
+          }}
+        />
+      </MetaTitle>
+    </button>
     <ul
       css={{
         marginBottom: 10,
@@ -67,6 +67,9 @@ const Section = ({
             marginTop: 5,
           }}>
           {createLink({
+            isActive: isScrollSync
+              ? activeItemId === item.id
+              : isItemActive(location, item),
             item,
             location,
             onLinkClick,
@@ -78,6 +81,9 @@ const Section = ({
               {item.subitems.map(subitem => (
                 <li key={subitem.id}>
                   {createLink({
+                    isActive: isScrollSync
+                      ? activeItemId === subitem.id
+                      : isItemActive(location, subitem),
                     item: subitem,
                     location,
                     onLinkClick,

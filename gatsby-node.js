@@ -1,11 +1,8 @@
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
- * This source code is licensed under the CC-BY-4.0 license found
- * in the LICENSE file in the root directory of this source tree.
- *
  * @emails react-core
-*/
+ */
 
 'use strict';
 
@@ -27,6 +24,9 @@ exports.modifyWebpackConfig = ({config, stage}) => {
 
 exports.createPages = async ({graphql, boundActionCreators}) => {
   const {createPage, createRedirect} = boundActionCreators;
+
+  // Used to detect and prevent duplicate redirects
+  const redirectToSlugMap = {};
 
   const blogTemplate = resolve('./src/templates/blog.js');
   const communityTemplate = resolve('./src/templates/community.js');
@@ -114,13 +114,22 @@ exports.createPages = async ({graphql, boundActionCreators}) => {
           redirect = [redirect];
         }
 
-        redirect.forEach(fromPath =>
+        redirect.forEach(fromPath => {
+          if (redirectToSlugMap[fromPath] != null) {
+            console.error(`Duplicate redirect detected from "${fromPath}" to:\n` +
+              `* ${redirectToSlugMap[fromPath]}\n` +
+              `* ${slug}\n`
+            );
+            process.exit(1);
+          }
+
+          redirectToSlugMap[fromPath] = slug;
           createRedirect({
             fromPath: `/${fromPath}`,
             redirectInBrowser: true,
             toPath: `/${slug}`,
-          }),
-        );
+          });
+        });
       }
     }
   });
